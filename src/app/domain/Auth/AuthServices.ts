@@ -9,7 +9,6 @@ import {
 } from 'routing-controllers';
 import PasswordValidator from 'password-validator';
 import { Types } from 'mongoose';
-import tokenVerification from 'helpers/tokenVerification';
 
 const { KEY } = process.env;
 const schema = new PasswordValidator();
@@ -37,12 +36,12 @@ export default class AuthServices {
         email,
         password: hashedPassword,
         admin,
-        token: null,
+        profiles: [],
       });
 
       return await this.UserSignIn({ email, password, remember });
     } catch (e: any) {
-      return e;
+      throw e;
     }
   }
 
@@ -60,34 +59,16 @@ export default class AuthServices {
         throw new UnauthorizedError('Incorrect password!');
 
       const accessToken = await this.createToken(_doc._id, remember);
-      await User.findByIdAndUpdate({ _id: _doc._id }, { token: accessToken });
 
       return { _id: _doc._id, token: accessToken, admin: _doc.admin };
     } catch (e) {
-      return e;
-    }
-  }
-
-  async UserLogOut(token: string) {
-    try {
-      const id = await tokenVerification(token);
-
-      const { _id }: any = await User.findByIdAndUpdate(
-        { _id: id },
-        { token: null }
-      );
-
-      if (!_id) throw new BadRequestError('User not found!');
-
-      return 'Logged out!';
-    } catch (e) {
-      return e;
+      throw e;
     }
   }
 
   async createToken(id: Types.ObjectId, remember: boolean) {
     if (typeof KEY === 'string') {
-      let expiresIn = remember ? '31d' : '1h';
+      const expiresIn = remember ? '31d' : '1h';
 
       return jwt.sign({ id }, KEY, { expiresIn });
     } else {

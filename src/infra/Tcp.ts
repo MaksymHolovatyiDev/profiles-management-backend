@@ -1,5 +1,8 @@
 import 'reflect-metadata';
 import express from 'express';
+import morgan from 'morgan';
+import * as fs from 'fs';
+import path from 'path';
 import { useExpressServer } from 'routing-controllers';
 
 import { IServes } from 'types/serves';
@@ -7,6 +10,7 @@ import { IServes } from 'types/serves';
 import { controllers } from 'app/domain';
 
 const { PORT } = process.env;
+const logsDir = path.join(__dirname, '../../logs');
 
 export class Tcp implements IServes {
   private static instance: Tcp;
@@ -22,6 +26,18 @@ export class Tcp implements IServes {
   }
   async init() {
     const { server, routePrefix } = this;
+
+    if (!fs.existsSync(logsDir)) {
+      fs.mkdirSync(logsDir);
+    }
+
+    server.use(
+      morgan('short', {
+        stream: fs.createWriteStream(path.join(logsDir, '/main.logs'), {
+          flags: 'a',
+        }),
+      })
+    );
 
     useExpressServer(server, {
       routePrefix,

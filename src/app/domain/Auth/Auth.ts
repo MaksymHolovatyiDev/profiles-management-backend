@@ -1,4 +1,4 @@
-import { Body, HeaderParam, JsonController, Post } from 'routing-controllers';
+import { Body,  JsonController, Post } from 'routing-controllers';
 import AuthServices from './AuthServices';
 import { ISignUp } from './AuthTypes';
 
@@ -14,10 +14,5 @@ export default class Auth {
   @Post('/SignIn')
   async SignIn(@Body() body: Pick<ISignUp, 'email' | 'password' | 'remember'>) {
     return this.service.UserSignIn(body);
-  }
-
-  @Post('/LogOut')
-  async UserLogOut(@HeaderParam('authorization') token: string) {
-    return this.service.UserLogOut(token);
   }
 }

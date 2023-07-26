@@ -2,39 +2,49 @@ import {
   Body,
   Delete,
   Get,
-  HeaderParam,
+  HttpCode,
   JsonController,
-  // Patch,
+  Param,
+  Patch,
   Post,
+  Res,
+  UseBefore,
 } from 'routing-controllers';
 import { ProfilesServices } from './ProfilesServices';
 import { IProfiles } from './ProfilesTypes';
-import { Types } from 'mongoose';
+import authenticationMiddleware from 'middlewares/authenticationMiddleware';
 
 @JsonController('/Profiles')
 export default class Profiles {
   public service = new ProfilesServices();
 
-  @Get()
-  async getProfiles(@HeaderParam('authorization') token: string) {
-    return this.service.getAllProfiles(token);
+  @Get('/:id')
+  @UseBefore(authenticationMiddleware())
+  async getProfiles(@Param('id') id: string, @Res() res: any) {
+    console.log(res.userTokenId);
+    return this.service.getAllProfiles(res.userTokenId, id);
   }
 
+  @HttpCode(201)
   @Post()
-  async addProfile(
-    @HeaderParam('authorization') token: string,
-    @Body() body: IProfiles
-  ) {
-    return this.service.addUserProfile(token, body);
+  @UseBefore(authenticationMiddleware())
+  async addProfile(@Body() body: IProfiles, @Res() res: any) {
+    return this.service.addUserProfile(res.userTokenId, body);
   }
 
-  // @Patch()
-  // async editProfile(@Body() body: IProfiles) {
-  //   return this.service.editUserProfile(body);
-  // }
+  @Patch('/:id')
+  @UseBefore(authenticationMiddleware())
+  async editProfile(
+    @Param('id') id: string,
+    @Body() body: IProfiles,
+    @Res() res: any
+  ) {
+    return this.service.editUserProfile(res.userTokenId, id, body);
+  }
 
-  @Delete()
-  async deleteProfile(@Body() body: Types.ObjectId) {
-    return this.service.deleteUserProfile(body);
+  @Delete('/:id')
+  @UseBefore(authenticationMiddleware())
+  async deleteProfile(@Param('id') id: string, @Res() res: any) {
+    return this.service.deleteUserProfile(res.userTokenId, id);
   }
 }

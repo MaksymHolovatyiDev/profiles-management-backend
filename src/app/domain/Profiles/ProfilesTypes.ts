@@ -1,6 +1,9 @@
 export interface IProfiles {
-  name: string;
-  gender: string;
-  birthdate: Date;
-  city: string;
+  userId: string;
+  data: {
+    name: string;
+    gender: string;
+    birthdate: Date;
+    city: string;
+  };
 }
