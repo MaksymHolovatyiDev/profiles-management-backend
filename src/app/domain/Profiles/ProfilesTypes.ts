@@ -7,3 +7,8 @@ export interface IProfiles {
     city: string;
   };
 }
+
+export interface IProfilesID {
+  id: string;
+  body: IProfiles;
+}

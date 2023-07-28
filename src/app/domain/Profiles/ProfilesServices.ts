@@ -2,7 +2,7 @@ import { isValidObjectId } from 'mongoose';
 import { BadRequestError, ForbiddenError } from 'routing-controllers';
 import { Profile } from 'models/profiles';
 import { User } from 'models/user';
-import { IProfiles } from './ProfilesTypes';
+import { IProfiles, IProfilesID } from './ProfilesTypes';
 
 export class ProfilesServices {
   async getAllProfiles(tokenId: string, userId: string) {
@@ -14,9 +14,19 @@ export class ProfilesServices {
         }
       }
 
-      return await User.findById(tokenId)
+      return await User.findById(userId)
         .lean()
-        .select('name gender birthdate city');
+        .populate({
+          path: 'profiles',
+          select: {
+            _id: { $toString: '$_id' },
+            name: 1,
+            gender: 1,
+            birthdate: 1,
+            city: 1,
+          },
+        })
+        .select('profiles -_id');
     } catch (e) {
       throw e;
     }
@@ -47,18 +57,20 @@ export class ProfilesServices {
         { $push: { profiles: _id } }
       );
 
-      return { _id, name, gender, birthdate, city };
+      return { _id: _id.toString(), name, gender, birthdate, city };
     } catch (e) {
       throw e;
     }
   }
 
-  async editUserProfile(tokenId: string, id: string, body: IProfiles) {
+  async editUserProfile(tokenId: string, data: IProfilesID) {
     const {
-      userId,
-      data: { name, gender, birthdate, city },
-    } = body;
-
+      id,
+      body: {
+        userId,
+        data: { name, gender, birthdate, city },
+      },
+    } = data;
     try {
       if (userId != tokenId) {
         const { admin }: any = await User.findById(tokenId);
@@ -71,14 +83,19 @@ export class ProfilesServices {
         throw new BadRequestError('Invalid id!');
       }
 
-      await Profile.findByIdAndUpdate(
+      return await Profile.findByIdAndUpdate(
         { _id: id },
-        { name, gender, birthdate, city }
+        { name, gender, birthdate, city },
+        { new: true }
       )
         .lean()
-        .select('name gender birthdate city');
-
-      return { message: 'Edited!' };
+        .select({
+          _id: { $toString: '$_id' },
+          name: 1,
+          gender: 1,
+          birthdate: 1,
+          city: 1,
+        });
     } catch (e) {
       throw e;
     }
@@ -105,7 +122,13 @@ export class ProfilesServices {
 
       return await Profile.findByIdAndDelete(id)
         .lean()
-        .select('name gender birthdate city');
+        .select({
+          _id: { $toString: '$_id' },
+          name: 1,
+          gender: 1,
+          birthdate: 1,
+          city: 1,
+        });
     } catch (e) {
       throw e;
     }

@@ -20,20 +20,21 @@ export default function authenticationMiddleware(admin: boolean = false) {
         throw new UnauthorizedError('Missing token!');
       }
 
-      const data: any = verify(accessToken, KEY);
+      try {
+        const data: any = verify(accessToken, KEY);
 
-      const user: any = await User.findById(data?.id);
-      if (!user || Date.now() >= data.exp * 1000) {
+        const user: any = await User.findById(data?.id);
+
+        if (admin && !user.admin) {
+          throw new ForbiddenError('Access denied');
+        }
+
+        response.userTokenId = data?.id;
+
+        next();
+      } catch (e) {
         throw new UnauthorizedError('Not authorized!');
       }
-
-      if (admin && !user.admin) {
-        throw new ForbiddenError('Access denied');
-      }
-
-      response.userTokenId = data?.id;
-
-      next();
     }
   };
 }

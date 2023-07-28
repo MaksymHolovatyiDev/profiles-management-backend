@@ -5,13 +5,13 @@ import {
   HttpCode,
   JsonController,
   Param,
-  Patch,
   Post,
+  Put,
   Res,
   UseBefore,
 } from 'routing-controllers';
 import { ProfilesServices } from './ProfilesServices';
-import { IProfiles } from './ProfilesTypes';
+import { IProfiles, IProfilesID } from './ProfilesTypes';
 import authenticationMiddleware from 'middlewares/authenticationMiddleware';
 
 @JsonController('/Profiles')
@@ -21,7 +21,6 @@ export default class Profiles {
   @Get('/:id')
   @UseBefore(authenticationMiddleware())
   async getProfiles(@Param('id') id: string, @Res() res: any) {
-    console.log(res.userTokenId);
     return this.service.getAllProfiles(res.userTokenId, id);
   }
 
@@ -32,14 +31,10 @@ export default class Profiles {
     return this.service.addUserProfile(res.userTokenId, body);
   }
 
-  @Patch('/:id')
+  @Put()
   @UseBefore(authenticationMiddleware())
-  async editProfile(
-    @Param('id') id: string,
-    @Body() body: IProfiles,
-    @Res() res: any
-  ) {
-    return this.service.editUserProfile(res.userTokenId, id, body);
+  async editProfile(@Body() body: IProfilesID, @Res() res: any) {
+    return this.service.editUserProfile(res.userTokenId, body);
   }
 
   @Delete('/:id')

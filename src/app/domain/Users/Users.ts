@@ -1,6 +1,15 @@
-import { Get, JsonController, Param, UseBefore } from 'routing-controllers';
+import {
+  Body,
+  Delete,
+  Get,
+  JsonController,
+  Param,
+  Put,
+  UseBefore,
+} from 'routing-controllers';
 import UsersServices from './UsersServices';
 import authenticationMiddleware from 'middlewares/authenticationMiddleware';
+import { IUsersData } from './UsersTypes';
 
 @JsonController('/Users')
 export default class Users {
@@ -12,9 +21,15 @@ export default class Users {
     return this.services.getAllUsers();
   }
 
-  @Get('/:id')
+  @Put()
   @UseBefore(authenticationMiddleware(true))
-  async getUserData(@Param('id') id: string) {
-    return this.services.getFullUserData(id);
+  async getUserData(@Body() body: IUsersData) {
+    return this.services.updateUser(body);
+  }
+
+  @Delete('/:id')
+  @UseBefore(authenticationMiddleware(true))
+  async getDeleteUser(@Param('id') id: string) {
+    return this.services.deleteUser(id);
   }
 }

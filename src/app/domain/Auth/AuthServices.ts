@@ -28,7 +28,7 @@ export default class AuthServices {
       const existedUser: any = await User.findOne({ email });
 
       if (existedUser?._doc) {
-        throw new ForbiddenError('User already exists!');
+        throw new ForbiddenError('Email already exists!');
       }
 
       await User.create({
@@ -49,9 +49,11 @@ export default class AuthServices {
     const { email, password, remember } = userData;
 
     try {
-      const { _doc }: any = await User.findOne({ email });
+      const userData: any = await User.findOne({ email });
 
-      if (!_doc) throw new BadRequestError('User doesn`t exists!');
+      if (!userData) throw new BadRequestError('User doesn`t exists!');
+
+      const { _doc } = userData;
 
       const isCorrectPassword = await bcrypt.compare(password, _doc.password);
 
@@ -60,7 +62,12 @@ export default class AuthServices {
 
       const accessToken = await this.createToken(_doc._id, remember);
 
-      return { _id: _doc._id, token: accessToken, admin: _doc.admin };
+      return {
+        _id: _doc._id.toString(),
+        token: accessToken,
+        admin: _doc.admin,
+        name: _doc.name,
+      };
     } catch (e) {
       throw e;
     }
