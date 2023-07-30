@@ -1,8 +1,8 @@
 import Auth from './Auth/Auth';
-import Dashboard from './Dashboard/Dashboard';
-import Profiles from './Profiles/Profiles';
 import Users from './Users/Users';
+import Profiles from './Profiles/Profiles';
+import Dashboard from './Dashboard/Dashboard';
 
-const controllers = <any>[Auth, Profiles, Dashboard, Users];
+const controllers = <any>[Auth, Users, Profiles, Dashboard];
 
 export { controllers };

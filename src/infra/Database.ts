@@ -15,16 +15,21 @@ export class Database implements IServes {
 
   async init() {
     await mongoose.set('strictQuery', true);
+
     try {
       if (typeof DB_HOST === 'string') {
+
         await mongoose.connect(DB_HOST);
+
         console.log('Database connected!');
+        
       } else {
         throw new Error('Database ERROR!');
       }
     } catch (e) {
       console.log(e);
     }
+
     return true;
   }
 }

@@ -1,5 +1,5 @@
-import { Profile } from 'models/profiles';
 import { User } from 'models/user';
+import { Profile } from 'models/profiles';
 
 export default class DashboardServices {
   async getFullData() {
@@ -8,6 +8,7 @@ export default class DashboardServices {
 
     const eighteenYearsOld = new Date();
     eighteenYearsOld.setFullYear(eighteenYearsOld.getFullYear() - 18);
+    
     const adult = await Profile.find({
       birthdate: { $lte: eighteenYearsOld },
     }).count();

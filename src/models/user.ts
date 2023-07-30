@@ -9,6 +9,7 @@ const userSchema = new Schema<IUser>(
     admin: { type: Boolean, required: true },
     profiles: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
   },
+
   { timestamps: true }
 );
 

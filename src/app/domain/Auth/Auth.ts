@@ -1,4 +1,5 @@
-import { Body,  JsonController, Post } from 'routing-controllers';
+import { Body, HttpCode, JsonController, Post } from 'routing-controllers';
+
 import AuthServices from './AuthServices';
 import { ISignUp } from './AuthTypes';
 
@@ -6,6 +7,7 @@ import { ISignUp } from './AuthTypes';
 export default class Auth {
   public service = new AuthServices();
 
+  @HttpCode(201)
   @Post('/SignUp')
   async SignUp(@Body() body: ISignUp) {
     return this.service.createNewUser(body);

@@ -7,7 +7,9 @@ const profileSchema = new Schema<IProfile>(
     gender: { type: String, required: true },
     birthdate: { type: Date, required: true },
     city: { type: String, required: true },
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   },
+
   { timestamps: true }
 );
 

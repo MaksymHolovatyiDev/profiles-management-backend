@@ -1,7 +1,5 @@
-export interface ISignUp {
-  name: string;
-  email: string;
-  password: string;
-  admin: boolean;
+import { IUser } from "types/models/user";
+
+export interface ISignUp extends IUser {
   remember: boolean;
 }

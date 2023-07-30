@@ -1,12 +1,14 @@
+import { verify } from 'jsonwebtoken';
 import {
   ExpressMiddlewareInterface,
   ForbiddenError,
   UnauthorizedError,
 } from 'routing-controllers';
-import { verify } from 'jsonwebtoken';
-import { User } from 'models/user';
 
-const { KEY }: any = process.env;
+import { User } from 'models/user';
+import { ISavedUser } from 'types/mainTypes';
+
+const { KEY } = process.env;
 
 export default function authenticationMiddleware(admin: boolean = false) {
   return class authenticationMiddlewareClass
@@ -21,11 +23,17 @@ export default function authenticationMiddleware(admin: boolean = false) {
       }
 
       try {
+        if (typeof KEY !== 'string') throw new Error('KEY Error!');
+
         const data: any = verify(accessToken, KEY);
 
-        const user: any = await User.findById(data?.id);
+        const user: ISavedUser | null = await User.findById(data?.id);
 
-        if (admin && !user.admin) {
+        if (!user) {
+          throw new Error('User not found!');
+        }
+
+        if (admin && !user?.admin) {
           throw new ForbiddenError('Access denied');
         }
 
@@ -33,7 +41,8 @@ export default function authenticationMiddleware(admin: boolean = false) {
 
         next();
       } catch (e) {
-        throw new UnauthorizedError('Not authorized!');
+        console.log(e);
+        throw new UnauthorizedError('Authorization error!');
       }
     }
   };

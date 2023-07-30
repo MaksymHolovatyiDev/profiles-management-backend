@@ -1,7 +1,7 @@
 require('dotenv').config();
-import { IServes } from 'types/serves';
-import { Database } from './Database';
 import { Tcp } from './Tcp';
+import { Database } from './Database';
+import { IServes } from 'types/serves';
 
 export class App implements IServes {
   private static instance: App;

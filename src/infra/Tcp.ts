@@ -1,12 +1,11 @@
 import 'reflect-metadata';
-import express from 'express';
-import morgan from 'morgan';
 import * as fs from 'fs';
 import path from 'path';
+import express from 'express';
+import morgan from 'morgan';
 import { useExpressServer } from 'routing-controllers';
 
 import { IServes } from 'types/serves';
-
 import { controllers } from 'app/domain';
 
 const { PORT } = process.env;
@@ -24,6 +23,7 @@ export class Tcp implements IServes {
     }
     return Tcp.instance;
   }
+
   async init() {
     const { server, routePrefix } = this;
 

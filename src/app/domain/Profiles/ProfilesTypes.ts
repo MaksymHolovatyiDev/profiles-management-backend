@@ -8,7 +8,3 @@ export interface IProfiles {
   };
 }
 
-export interface IProfilesID {
-  id: string;
-  body: IProfiles;
-}

@@ -1,17 +1,18 @@
 import {
-  Body,
-  Delete,
-  Get,
-  HttpCode,
-  JsonController,
-  Param,
-  Post,
-  Put,
-  Res,
   UseBefore,
+  JsonController,
+  HttpCode,
+  Param,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Res,
+  Body,
 } from 'routing-controllers';
+
 import { ProfilesServices } from './ProfilesServices';
-import { IProfiles, IProfilesID } from './ProfilesTypes';
+import { IProfiles } from './ProfilesTypes';
 import authenticationMiddleware from 'middlewares/authenticationMiddleware';
 
 @JsonController('/Profiles')
@@ -20,26 +21,30 @@ export default class Profiles {
 
   @Get('/:id')
   @UseBefore(authenticationMiddleware())
-  async getProfiles(@Param('id') id: string, @Res() res: any) {
+  async getProfiles(@Res() res: any, @Param('id') id: string) {
     return this.service.getAllProfiles(res.userTokenId, id);
   }
 
   @HttpCode(201)
   @Post()
   @UseBefore(authenticationMiddleware())
-  async addProfile(@Body() body: IProfiles, @Res() res: any) {
+  async addProfile(@Res() res: any, @Body() body: IProfiles) {
     return this.service.addUserProfile(res.userTokenId, body);
   }
 
-  @Put()
+  @Patch('/:id')
   @UseBefore(authenticationMiddleware())
-  async editProfile(@Body() body: IProfilesID, @Res() res: any) {
-    return this.service.editUserProfile(res.userTokenId, body);
+  async editProfile(
+    @Res() res: any,
+    @Param('id') id: string,
+    @Body() body: IProfiles
+  ) {
+    return this.service.editUserProfile(res.userTokenId, id, body);
   }
 
   @Delete('/:id')
   @UseBefore(authenticationMiddleware())
-  async deleteProfile(@Param('id') id: string, @Res() res: any) {
+  async deleteProfile(@Res() res: any, @Param('id') id: string) {
     return this.service.deleteUserProfile(res.userTokenId, id);
   }
 }

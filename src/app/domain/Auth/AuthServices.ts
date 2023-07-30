@@ -1,14 +1,16 @@
-import bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
-import { ISignUp } from './AuthTypes';
-import { User } from 'models/user';
+import bcrypt from 'bcrypt';
+import PasswordValidator from 'password-validator';
+import { Types } from 'mongoose';
 import {
   BadRequestError,
   ForbiddenError,
   UnauthorizedError,
 } from 'routing-controllers';
-import PasswordValidator from 'password-validator';
-import { Types } from 'mongoose';
+
+import { User } from 'models/user';
+import { ISignUp } from './AuthTypes';
+import { ISavedUser } from 'types/mainTypes';
 
 const { KEY } = process.env;
 const schema = new PasswordValidator();
@@ -19,28 +21,28 @@ export default class AuthServices {
   async createNewUser(userData: ISignUp) {
     const { name, email, password, admin, remember } = userData;
 
+    const existedUser: ISavedUser | null = await User.findOne({ email });
+
+    if (existedUser) {
+      throw new ForbiddenError('Email already exists!');
+    }
+
     try {
       if (!schema.validate(password)) {
         throw new BadRequestError('Password too short!');
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      const existedUser: any = await User.findOne({ email });
-
-      if (existedUser?._doc) {
-        throw new ForbiddenError('Email already exists!');
-      }
 
       await User.create({
         name,
         email,
         password: hashedPassword,
         admin,
-        profiles: [],
       });
 
       return await this.UserSignIn({ email, password, remember });
-    } catch (e: any) {
+    } catch (e) {
       throw e;
     }
   }
@@ -49,24 +51,24 @@ export default class AuthServices {
     const { email, password, remember } = userData;
 
     try {
-      const userData: any = await User.findOne({ email });
+      const userData: ISavedUser | null = await User.findOne({ email });
 
       if (!userData) throw new BadRequestError('User doesn`t exists!');
 
-      const { _doc } = userData;
+      const { _id, name, admin, password: userPassword } = userData;
 
-      const isCorrectPassword = await bcrypt.compare(password, _doc.password);
+      const isCorrectPassword = await bcrypt.compare(password, userPassword);
 
       if (!isCorrectPassword)
         throw new UnauthorizedError('Incorrect password!');
 
-      const accessToken = await this.createToken(_doc._id, remember);
+      const accessToken = await this.createToken(_id, remember);
 
       return {
-        _id: _doc._id.toString(),
+        _id: _id.toString(),
+        name: name,
+        admin: admin,
         token: accessToken,
-        admin: _doc.admin,
-        name: _doc.name,
       };
     } catch (e) {
       throw e;

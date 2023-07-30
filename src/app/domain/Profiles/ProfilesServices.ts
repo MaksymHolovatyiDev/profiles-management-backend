@@ -1,32 +1,24 @@
 import { isValidObjectId } from 'mongoose';
 import { BadRequestError, ForbiddenError } from 'routing-controllers';
-import { Profile } from 'models/profiles';
+
 import { User } from 'models/user';
-import { IProfiles, IProfilesID } from './ProfilesTypes';
+import { Profile } from 'models/profiles';
+import { IProfiles } from './ProfilesTypes';
 
 export class ProfilesServices {
   async getAllProfiles(tokenId: string, userId: string) {
     try {
-      if (userId != tokenId) {
-        const { admin }: any = await User.findById(tokenId);
-        if (!admin) {
-          throw new ForbiddenError('Access denied!');
-        }
-      }
+      await this.isCorrectUser(tokenId, userId);
 
-      return await User.findById(userId)
-        .lean()
-        .populate({
-          path: 'profiles',
-          select: {
-            _id: { $toString: '$_id' },
-            name: 1,
-            gender: 1,
-            birthdate: 1,
-            city: 1,
-          },
+      return await Profile.find({ user: userId })
+        .select({
+          _id: { $toString: '$_id' },
+          name: 1,
+          gender: 1,
+          birthdate: 1,
+          city: 1,
         })
-        .select('profiles -_id');
+        .lean();
     } catch (e) {
       throw e;
     }
@@ -37,19 +29,16 @@ export class ProfilesServices {
       userId,
       data: { name, gender, birthdate, city },
     } = body;
+
     try {
-      if (userId != tokenId) {
-        const { admin }: any = await User.findById(tokenId);
-        if (!admin) {
-          throw new ForbiddenError('Access denied!');
-        }
-      }
+      await this.isCorrectUser(tokenId, userId);
 
       const { _id }: any = await Profile.create({
         name,
         gender,
         birthdate,
         city,
+        user: userId,
       });
 
       await User.findByIdAndUpdate(
@@ -63,28 +52,32 @@ export class ProfilesServices {
     }
   }
 
-  async editUserProfile(tokenId: string, data: IProfilesID) {
+  async editUserProfile(tokenId: string, _id: string, body: IProfiles) {
     const {
-      id,
-      body: {
-        userId,
-        data: { name, gender, birthdate, city },
-      },
-    } = data;
-    try {
-      if (userId != tokenId) {
-        const { admin }: any = await User.findById(tokenId);
-        if (!admin) {
-          throw new ForbiddenError('Access denied!');
-        }
-      }
+      userId,
+      data: { name, gender, birthdate, city },
+    } = body;
 
-      if (!isValidObjectId(id)) {
+    try {
+      if (!isValidObjectId(userId || !isValidObjectId(_id))) {
         throw new BadRequestError('Invalid id!');
       }
 
+      const user = await User.findById(tokenId);
+
+      if (!user || (userId !== tokenId && !user?.admin))
+        throw new ForbiddenError('Access denied!');
+
+      const userProfile = await Profile.findById(_id);
+
+      if (
+        !userProfile ||
+        (userProfile.user.toString() !== userId && !user.admin)
+      )
+        throw new BadRequestError('Incorrect user!');
+
       return await Profile.findByIdAndUpdate(
-        { _id: id },
+        { _id },
         { name, gender, birthdate, city },
         { new: true }
       )
@@ -103,16 +96,19 @@ export class ProfilesServices {
 
   async deleteUserProfile(tokenId: string, id: string) {
     try {
-      const data: any = await User.findById(tokenId);
-
-      if (!data?.profiles?.includes(id) ?? true) {
-        if (!data?.admin ?? true) {
-          throw new ForbiddenError('Access denied!');
-        }
-      }
-
       if (!isValidObjectId(id)) {
         throw new BadRequestError('Invalid id!');
+      }
+
+      const profileData = await Profile.findById(id);
+
+      if (!profileData) throw new BadRequestError('Incorrect profile id!');
+
+      if (profileData.user.toString() !== tokenId) {
+        const userData = await User.findById(tokenId);
+        if (userData && !userData.admin) {
+          throw new ForbiddenError('Access denied!');
+        }
       }
 
       await User.findOneAndUpdate(
@@ -124,13 +120,21 @@ export class ProfilesServices {
         .lean()
         .select({
           _id: { $toString: '$_id' },
-          name: 1,
-          gender: 1,
-          birthdate: 1,
-          city: 1,
         });
     } catch (e) {
       throw e;
+    }
+  }
+
+  async isCorrectUser(tokenId: string, userId: string) {
+    if (!isValidObjectId(userId)) {
+      throw new BadRequestError('Invalid id!');
+    }
+    if (userId !== tokenId) {
+      const user = await User.findById(tokenId);
+      if (!user?.admin) {
+        throw new ForbiddenError('Access denied!');
+      }
     }
   }
 }
