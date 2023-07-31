@@ -46,7 +46,15 @@ export class ProfilesServices {
         { $push: { profiles: _id } }
       );
 
-      return { _id: _id.toString(), name, gender, birthdate, city };
+      return await Profile.findById(_id)
+        .select({
+          _id: { $toString: '$_id' },
+          name: 1,
+          gender: 1,
+          birthdate: 1,
+          city: 1,
+        })
+        .lean();
     } catch (e) {
       throw e;
     }
