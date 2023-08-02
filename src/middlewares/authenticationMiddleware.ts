@@ -34,7 +34,7 @@ export default function authenticationMiddleware(admin: boolean = false) {
         }
 
         if (admin && !user?.admin) {
-          throw new ForbiddenError('Access denied');
+          throw new ForbiddenError('Access denied!');
         }
 
         response.userTokenId = data?.id;
@@ -42,7 +42,7 @@ export default function authenticationMiddleware(admin: boolean = false) {
         next();
       } catch (e) {
         console.log(e);
-        throw new UnauthorizedError('Authorization error!');
+        throw new ForbiddenError('Access denied!');
       }
     }
   };

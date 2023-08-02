@@ -2,15 +2,12 @@ import * as jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import PasswordValidator from 'password-validator';
 import { Types } from 'mongoose';
-import {
-  BadRequestError,
-  ForbiddenError,
-  UnauthorizedError,
-} from 'routing-controllers';
+import { BadRequestError, UnauthorizedError } from 'routing-controllers';
 
 import { User } from 'models/user';
 import { ISignUp } from './AuthTypes';
 import { ISavedUser } from 'types/mainTypes';
+import { customError } from 'cusotmError/customError';
 
 const { KEY } = process.env;
 const schema = new PasswordValidator();
@@ -24,7 +21,7 @@ export default class AuthServices {
     const existedUser: ISavedUser | null = await User.findOne({ email });
 
     if (existedUser) {
-      throw new ForbiddenError('Email already exists!');
+      throw new customError(409, 'Email already exists!');
     }
 
     try {

@@ -5,6 +5,7 @@ import { User } from 'models/user';
 import { IUser } from 'types/models/user';
 import { Profile } from 'models/profiles';
 import { ISavedUser } from 'types/mainTypes';
+import { customError } from 'cusotmError/customError';
 
 export default class UsersServices {
   async getAllUsers() {
@@ -22,7 +23,16 @@ export default class UsersServices {
 
   async getCurrentUser(id: string) {
     try {
-      return await User.findById(id).lean().select('_id name email admin');
+      if (!isValidObjectId(id)) throw new BadRequestError('Invalid id!');
+
+      const user = await User.findById(id)
+        .lean()
+        .select('_id name email admin');
+      if (user) {
+        return user;
+      } else {
+        throw new BadRequestError('User doesn`t exists!');
+      }
     } catch (e) {
       throw e;
     }
@@ -32,13 +42,27 @@ export default class UsersServices {
     const { name, email, admin } = body;
 
     try {
-      return await User.findByIdAndUpdate(
+      if (!isValidObjectId(_id)) throw new BadRequestError('Invalid id!');
+
+      const user = await User.findOne({ email }).lean();
+
+      if (user && user._id.toString() !== _id) {
+        throw new customError(409, 'Email already exists!');
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(
         { _id },
         { name, email, admin },
         { new: true }
       )
         .lean()
         .select('_id name email admin');
+
+      if (updatedUser) {
+        return updatedUser;
+      } else {
+        throw new BadRequestError('User doesn`t exists!');
+      }
     } catch (e) {
       throw e;
     }

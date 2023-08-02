@@ -67,7 +67,7 @@ export class ProfilesServices {
     } = body;
 
     try {
-      if (!isValidObjectId(userId || !isValidObjectId(_id))) {
+      if (!isValidObjectId(userId) || !isValidObjectId(_id)) {
         throw new BadRequestError('Invalid id!');
       }
 

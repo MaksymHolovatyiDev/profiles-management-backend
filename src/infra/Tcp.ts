@@ -54,4 +54,17 @@ export class Tcp implements IServes {
       });
     });
   }
+
+  getServer() {
+    const { server, routePrefix } = this;
+
+    useExpressServer(server, {
+      routePrefix,
+      controllers,
+      cors: true,
+      defaultErrorHandler: true,
+    });
+
+    return server;
+  }
 }
