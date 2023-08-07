@@ -39,19 +39,6 @@ export class Tcp implements IServes {
     //   })
     // );
 
-    server.use(function (_, res, next) {
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader(
-        'Access-Control-Allow-Methods',
-        'GET, POST, OPTIONS, PUT, PATCH, DELETE'
-      );
-      res.setHeader(
-        'Access-Control-Allow-Headers',
-        'X-Requested-With,content-type'
-      );
-      next();
-    });
-
     useExpressServer(server, {
       routePrefix,
       controllers,
@@ -60,7 +47,7 @@ export class Tcp implements IServes {
     });
 
     return new Promise<boolean>((resolve: any) => {
-      server.listen(PORT, () => {
+      server.listen(PORT || 3000, () => {
         console.log(`Tcp service started! Port ${PORT}!`);
 
         return resolve(true);
