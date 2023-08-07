@@ -1,15 +1,15 @@
 import 'reflect-metadata';
-import * as fs from 'fs';
-import path from 'path';
+// import * as fs from 'fs';
+// import path from 'path';
 import express from 'express';
-import morgan from 'morgan';
+// import morgan from 'morgan';
 import { useExpressServer } from 'routing-controllers';
 
 import { IServes } from 'types/serves';
 import { controllers } from 'app/domain';
 
 const { PORT } = process.env;
-const logsDir = path.join(__dirname, '../../logs');
+// const logsDir = path.join(__dirname, '../../logs');
 
 export class Tcp implements IServes {
   private static instance: Tcp;
@@ -27,17 +27,30 @@ export class Tcp implements IServes {
   async init() {
     const { server, routePrefix } = this;
 
-    if (!fs.existsSync(logsDir)) {
-      fs.mkdirSync(logsDir);
-    }
+    // if (!fs.existsSync(logsDir)) {
+    //   fs.mkdirSync(logsDir);
+    // }
 
-    server.use(
-      morgan('short', {
-        stream: fs.createWriteStream(path.join(logsDir, '/main.logs'), {
-          flags: 'a',
-        }),
-      })
-    );
+    // server.use(
+    //   morgan('short', {
+    //     stream: fs.createWriteStream(path.join(logsDir, '/main.logs'), {
+    //       flags: 'a',
+    //     }),
+    //   })
+    // );
+
+    server.use(function (_, res, next) {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader(
+        'Access-Control-Allow-Methods',
+        'GET, POST, OPTIONS, PUT, PATCH, DELETE'
+      );
+      res.setHeader(
+        'Access-Control-Allow-Headers',
+        'X-Requested-With,content-type'
+      );
+      next();
+    });
 
     useExpressServer(server, {
       routePrefix,
