@@ -2,7 +2,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const request = require('supertest');
 
-const { Tcp } = require('../src/infra/Tcp');
+const { Tcp } = require('../infra/Tcp');
 
 const TCP = new Tcp();
 
