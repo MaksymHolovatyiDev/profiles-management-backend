@@ -3,12 +3,12 @@ import 'reflect-metadata';
 // import path from 'path';
 import express from 'express';
 // import morgan from 'morgan';
-import { useExpressServer } from 'routing-controllers';
+import {useExpressServer} from 'routing-controllers';
 
-import { IServes } from 'types/serves';
-import { controllers } from 'app/domain';
+import {IServes} from 'types/serves';
+import {controllers} from 'app/domain';
 
-const { PORT } = process.env;
+const {PORT} = process.env;
 // const logsDir = path.join(__dirname, '../../logs');
 
 export class Tcp implements IServes {
@@ -25,7 +25,7 @@ export class Tcp implements IServes {
   }
 
   async init() {
-    const { server, routePrefix } = this;
+    const {server, routePrefix} = this;
 
     // if (!fs.existsSync(logsDir)) {
     //   fs.mkdirSync(logsDir);
@@ -47,7 +47,7 @@ export class Tcp implements IServes {
     });
 
     return new Promise<boolean>((resolve: any) => {
-      server.listen(PORT || 3000, () => {
+      server.listen(PORT || 8080, () => {
         console.log(`Tcp service started! Port ${PORT}!`);
 
         return resolve(true);
@@ -56,7 +56,7 @@ export class Tcp implements IServes {
   }
 
   getServer() {
-    const { server, routePrefix } = this;
+    const {server, routePrefix} = this;
 
     useExpressServer(server, {
       routePrefix,
