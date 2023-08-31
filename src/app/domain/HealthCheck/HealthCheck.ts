@@ -7,7 +7,7 @@ export default class HealthCheck {
   @Get()
   async HealthCheck() {
     return {
-      message: 'Server running!',
+      message: 'Server running!!!',
       key: KEY,
       port: PORT,
       db: DB_TEST,
