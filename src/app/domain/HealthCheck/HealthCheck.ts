@@ -8,7 +8,7 @@ export default class HealthCheck {
   async HealthCheck() {
     return {
       message: 'Server running!!!',
-      key: KEY,
+      key: `key ${KEY}`,
       port: PORT,
       db: DB_TEST,
     };
